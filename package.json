@@ -1,0 +1,16 @@
+{
+  "name": "myexpress",
+  "version": "0.0.0",
+  "description": "The Express App",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "Kaeli",
+  "license": "MIT",
+  "devDependencies": {
+    "mocha": "^1.18.2",
+    "chai": "^1.9.1",
+    "supertest": "^0.10.0"
+  }
+}
