@@ -4,5 +4,11 @@ module.exports = express = function() {
     response.end();
   };
 
+  myexpress.listen = function(port) {
+    var server = require("http").createServer(this);
+    server.listen(port);
+    return server;
+  };
+
   return myexpress;
 }
