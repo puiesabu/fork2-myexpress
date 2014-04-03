@@ -23,4 +23,16 @@ describe("app",function() {
       request("http://localhost:7000").get("/foo").expect(404).end(done);
     });
   });
+
+  describe(".use",function() {
+    it("should be able to add middlewares to stack", function() {
+      var m1 = function() {};
+      var m2 = function() {};
+      app.use(m1);
+      app.use(m2);
+      expect(app.stack).with.length(2);
+      expect(app.stack[0]).to.equal(m1);
+      expect(app.stack[1]).to.equal(m2);
+    });
+  });
 });
