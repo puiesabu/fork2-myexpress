@@ -1,8 +1,19 @@
 module.exports = express = function() {
   var myexpress = function(request, response) {
-    response.statusCode = 404;
-    response.end();
+    getNext(request, response, 0);
+    next();
   };
+
+  var getNext = function(request, response, n) {
+    module.exports = next = function() {
+      if (n < myexpress.stack.length) {
+        myexpress.stack[n++](request, response, next);
+      } else {
+        response.statusCode = 404;
+        response.end();
+      }
+    }
+  }
 
   myexpress.listen = function(port) {
     var server = require("http").createServer(this);
