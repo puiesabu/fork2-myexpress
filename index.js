@@ -1,15 +1,35 @@
 module.exports = express = function() {
+  var next;
+
   var myexpress = function(request, response) {
     getNext(request, response, 0);
     next();
   };
 
   var getNext = function(request, response, n) {
-    module.exports = next = function() {
+    next = function(error) {
       if (n < myexpress.stack.length) {
-        myexpress.stack[n++](request, response, next);
+        var f = myexpress.stack[n++];
+
+        try {
+          if (error) {
+            if (f.length == 4) {
+              f(error, request, response, next);
+            } else {
+              next(error);
+            }
+          } else {
+            if (f.length == 4) {
+              next();
+            } else {
+              f(request, response, next);
+            }
+          }
+        } catch (err) {
+          next(err);
+        }
       } else {
-        response.statusCode = 404;
+        response.statusCode = error? 500 : 404;
         response.end();
       }
     }
