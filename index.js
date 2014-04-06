@@ -12,18 +12,12 @@ module.exports = express = function() {
         var f = myexpress.stack[n++];
 
         try {
-          if (error) {
-            if (f.length == 4) {
-              f(error, request, response, next);
-            } else {
-              next(error);
-            }
+          if (!error && f.length < 4) {
+            f(request, response, next);
+          } else if (error && f.length == 4) {
+            f(error, request, response, next);
           } else {
-            if (f.length == 4) {
-              next();
-            } else {
-              f(request, response, next);
-            }
+            next(error);
           }
         } catch (err) {
           next(err);
