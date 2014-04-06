@@ -1,7 +1,10 @@
 module.exports = express = function() {
   var next;
+  var parentNext;
 
-  var myexpress = function(request, response) {
+  var myexpress = function(request, response, _parentNext) {
+    parentNext = _parentNext;
+
     getNext(request, response, 0);
     next();
   };
@@ -23,8 +26,12 @@ module.exports = express = function() {
           next(err);
         }
       } else {
-        response.statusCode = error? 500 : 404;
-        response.end();
+        if (parentNext) {
+          parentNext(error); 
+        } else {
+          response.statusCode = error? 500 : 404;
+          response.end();
+        }
       }
     }
   }
