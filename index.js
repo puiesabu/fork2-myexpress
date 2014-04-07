@@ -1,3 +1,5 @@
+var Layer = require("./lib/layer");
+
 module.exports = express = function() {
   var next;
   var parentNext;
@@ -43,8 +45,12 @@ module.exports = express = function() {
   };
 
   myexpress.stack = new Array();
-  myexpress.use = function(m) {
-    myexpress.stack.push(m);
+  myexpress.use = function(argv1, argv2) {
+    var path = argv2? argv1 : "/";
+    var f = argv2? argv2 : argv1;
+
+    var layer = new Layer(path, f);
+    myexpress.stack.push(layer);
   };
 
   return myexpress;

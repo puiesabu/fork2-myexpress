@@ -211,8 +211,21 @@ describe("Layer class and the match method", function() {
 });
 
 describe("app.use should add a Layer to stack", function() {
-  it("first layer's path should be /");
-  it("second layer's path should be /foo");
+  var app;
+  beforeEach(function() {
+    app = express();
+    Layer = require("../lib/layer");
+    app.use(function() {});
+    app.use("/foo", function() {});
+  });
+
+  it("first layer's path should be /", function() {
+    expect(app.stack[0].match("/")).to.have.property("path", "/");
+  });
+
+  it("second layer's path should be /foo", function() {
+    expect(app.stack[1].match("/foo")).to.have.property("path", "/foo");
+  });
 });
 
 describe("The middlewares called should match request path:", function() {
