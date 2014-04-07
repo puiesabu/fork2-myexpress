@@ -179,3 +179,44 @@ describe("Implement App Embedding As Middleware", function() {
     request(app).get("/").expect("m1 error").end(done);
   });
 });
+
+describe("Layer class and the match method", function() {
+  var layer, m1;
+  beforeEach(function() {
+    Layer = require("../lib/layer");
+    m1 = function(){};
+
+    layer = new Layer("/foo", m1);      
+  });
+
+  it("sets layer.handle to be the middleware", function() {
+    expect(layer.handle).to.be.equal(m1);
+  });
+
+  it("returns undefined if path doesn't match", function() {
+    expect(layer.match("/bar")).to.be.undefined;
+  });
+
+  it("returns matched path if layer matches the request path exactly", function() {
+    var match = layer.match("/foo");
+    expect(match).to.not.be.undefined;
+    expect(match).to.have.property("path","/foo");
+  });
+
+  it("returns matched prefix if the layer matches the prefix of the request path", function() {
+    var match = layer.match("/foo/bar");
+    expect(match).to.not.be.undefined;
+    expect(match).to.have.property("path","/foo");    
+  });
+});
+
+describe("app.use should add a Layer to stack", function() {
+  it("first layer's path should be /");
+  it("second layer's path should be /foo");
+});
+
+describe("The middlewares called should match request path:", function() {
+  it("returns root for GET /");
+  it("returns foo for GET /foo");
+  it("returns foo for GET /foo/bar");
+});
