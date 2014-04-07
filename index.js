@@ -16,7 +16,11 @@ module.exports = express = function() {
       if (n < myexpress.stack.length) {
         var layer = myexpress.stack[n++];
         if (layer.match(request.url) === undefined) {
-          next();
+          next(error);
+        }
+
+        if (error && layer.path != request.url) {
+          next(error);
         }
 
         var f = layer.handle;

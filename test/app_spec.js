@@ -253,3 +253,34 @@ describe("The middlewares called should match request path:", function() {
     request(app).get("/foo/bar").expect("foo").end(done);
   });
 });
+
+describe("The error handlers called should match request path", function() {
+  var app;
+  beforeEach(function() {
+    app = express();
+    Layer = require("../lib/layer");
+    app.use("/foo",function(req,res,next) {
+      throw "boom!"
+    });
+
+    app.use("/foo/a",function(err,req,res,next) {
+      res.end("error handled /foo/a");
+    });
+
+    app.use("/foo/b",function(err,req,res,next) {
+      res.end("error handled /foo/b");
+    });
+  });
+
+  it("returns error handled /foo/a for GET /foo/a", function(done) {
+    request(app).get("/foo/a").expect("error handled /foo/a").end(done);
+  });
+
+  it("returns error handled /foo/b for GET /foo/b", function(done) {
+    request(app).get("/foo/b").expect("error handled /foo/b").end(done);
+  });
+
+  it("returns 500 for GET /foo", function(done) {
+    request(app).get("/foo").expect(500).end(done);
+  });
+});
