@@ -229,7 +229,27 @@ describe("app.use should add a Layer to stack", function() {
 });
 
 describe("The middlewares called should match request path:", function() {
-  it("returns root for GET /");
-  it("returns foo for GET /foo");
-  it("returns foo for GET /foo/bar");
+  var app;
+  beforeEach(function() {
+    app = express();
+    Layer = require("../lib/layer");
+    app.use(function(request, responds) { 
+      responds.end("root");
+    });
+    app.use("/foo", function(request, responds) { 
+      responds.end("foo");
+    });
+  });
+
+  it("returns root for GET /", function(done) {
+    request(app).get("/").expect("root").end(done);
+  });
+
+  it("returns foo for GET /foo", function(done) {
+    request(app).get("/foo").expect("foo").end(done);
+  });
+
+  it("returns foo for GET /foo/bar", function(done) {
+    request(app).get("/foo/bar").expect("foo").end(done);
+  });
 });

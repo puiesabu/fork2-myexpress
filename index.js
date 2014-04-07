@@ -14,7 +14,12 @@ module.exports = express = function() {
   var getNext = function(request, response, n) {
     next = function(error) {
       if (n < myexpress.stack.length) {
-        var f = myexpress.stack[n++];
+        var layer = myexpress.stack[n++];
+        if (layer.match(request.url) === undefined) {
+          next();
+        }
+
+        var f = layer.handle;
 
         try {
           if (!error && f.length < 4) {
