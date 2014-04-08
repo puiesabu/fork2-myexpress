@@ -284,3 +284,66 @@ describe("The error handlers called should match request path", function() {
     request(app).get("/foo").expect(500).end(done);
   });
 });
+
+describe("Path parameters extraction", function() {
+  var layer;
+  beforeEach(function() {
+    Layer = require("../lib/layer");
+    layer = new Layer("/foo/:a/:b", function() {});      
+  });
+
+  it("returns undefined for unmatched path", function() {
+    expect(layer.match("/bar")).to.be.undefined;
+  });
+
+  it("returns undefined if there isn't enough parameters", function() {
+    expect(layer.match("/foo/apple")).to.be.undefined;
+  });
+
+  it("returns match data for exact match", function() {
+    var match = layer.match("/foo/apple/xiaomi");
+    expect(match).to.not.be.undefined;
+    expect(match).to.have.property("path","/foo/apple/xiaomi");
+    expect(match.params).to.deep.equal({a: "apple", b: "xiaomi"});
+  });
+
+  it("returns match data for prefix match", function() {
+    var match = layer.match("/foo/apple/xiaomi/htc");
+    expect(match).to.not.be.undefined;
+    expect(match).to.have.property("path","/foo/apple/xiaomi");
+    expect(match.params).to.deep.equal({a: "apple", b: "xiaomi"});
+  });
+
+  it("should decode uri encoding", function() {
+    expect(layer.match("/foo/apple/xiao%20mi").params).to.deep.equal({a: "apple", b: "xiao mi"});
+  });
+
+  it("should strip trialing slash", function() {
+    layer = new Layer("/foo");
+    expect(layer.match("/foo")).to.not.be.undefined;
+    expect(layer.match("/foo/")).to.not.be.undefined;
+  });
+});
+
+describe("Implement req.params", function() {
+  var app;
+  beforeEach(function() {
+    app = express();
+    Layer = require("../lib/layer");
+    app.use("/foo/:a",function(req,res,next) {
+      res.end(req.params.a);
+    });
+
+    app.use("/foo",function(req,res,next) {
+      res.end(""+req.params.a);
+    });
+  });
+
+  it("should make path parameters accessible in req.params", function(done) {
+    request(app).get("/foo/google").expect("google").end(done);
+  });
+
+  it("should make {} the default for req.params", function(done) {
+    request(app).get("/foo").expect("undefined").end(done);
+  });
+});
