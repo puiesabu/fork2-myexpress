@@ -1,4 +1,5 @@
 var Layer = require("./lib/layer");
+var makeRoute = require("./lib/route.js");
 
 module.exports = express = function() {
   var next;
@@ -23,6 +24,11 @@ module.exports = express = function() {
         }
 
         var layer = myexpress.stack[n++];
+        if (layer.method) {
+          if (layer.method != request.method.toLowerCase() || layer.path != request.url)
+          next(error);
+        }
+
         var match = layer.match(request.url);
         if (match === undefined) {
           next(error);
@@ -77,6 +83,13 @@ module.exports = express = function() {
     var layer = new Layer(path, f);
     myexpress.stack.push(layer);
   };
+
+  myexpress.get = function(path, f) {
+    var layer = new Layer(path, makeRoute("get", f));
+    layer.method = "get";
+
+    myexpress.stack.push(layer);
+  }
 
   myexpress.handle = myexpress;
 
