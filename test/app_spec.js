@@ -347,3 +347,50 @@ describe("Implement req.params", function() {
     request(app).get("/foo").expect("undefined").end(done);
   });
 });
+
+describe("app should have the handle method", function() {
+  it("should have the handle method",function() {
+    var app = express();
+    expect(app.handle).to.be.a("function");
+  });
+});
+
+describe("Prefix path trimming", function() {
+  var app, subApp;
+  beforeEach(function() {
+    app = express();
+    subApp = express();
+
+    subApp.use("/bar",function(req,res) {
+      res.end("embedded app: "+req.url);
+    });
+    app.use("/foo",subApp);
+    app.use("/foo",function(req,res) {
+      res.end("handler: "+req.url);
+    });    
+  });
+
+  it("trims request path prefix when calling embedded app", function(done) {
+    request(app).get("/foo/bar").expect("embedded app: /bar").end(done);
+  });
+
+  it("restore trimmed request path to original when going to the next middleware", function(done) {
+    request(app).get("/foo").expect("handler: /foo").end(done);
+  });
+
+  describe("ensures leading slash", function() {
+    var barApp;
+    beforeEach(function() {
+      barApp = express();
+      barApp.use("/",function(req, res) {
+        res.end("/bar");
+      });
+      app.use("/bar",barApp);
+    });
+
+    it("ensures that first char is / for trimmed path", function(done) {
+      request(app).get("/bar/").expect("/bar").end(done);
+    });
+  });
+});
+

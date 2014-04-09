@@ -12,13 +12,22 @@ module.exports = express = function() {
   };
 
   var getNext = function(request, response, n) {
+    var originalUrl = null;
+
     next = function(error) {
       if (n < myexpress.stack.length) {
+        if (originalUrl != null) {
+          // restore request.url
+          request.url = originalUrl;
+          originalUrl = null;
+        }
+
         var layer = myexpress.stack[n++];
-        if (layer.match(request.url) === undefined) {
+        var match = layer.match(request.url);
+        if (match === undefined) {
           next(error);
         } else {
-          request.params = layer.match(request.url).params;
+          request.params = match.params;
         }
 
         if (error && layer.path != request.url) {
@@ -26,6 +35,11 @@ module.exports = express = function() {
         }
 
         var f = layer.handle;
+
+        if(typeof f.handle === "function") {
+          originalUrl = request.url
+          request.url = request.url.substr(layer.path .length);
+        }
 
         try {
           if (!error && f.length < 4) {
@@ -63,6 +77,8 @@ module.exports = express = function() {
     var layer = new Layer(path, f);
     myexpress.stack.push(layer);
   };
+
+  myexpress.handle = myexpress;
 
   return myexpress;
 }
