@@ -76,6 +76,17 @@ module.exports = express = function() {
     return server;
   };
 
+  myexpress.routes = {};
+  myexpress.route = function(path) {
+    var route = myexpress.routes[path];
+    if (!route) {
+      route = makeRoute();
+      myexpress.routes[path] = route;
+      myexpress.use(route);
+    }
+    return route;
+  }
+
   myexpress.stack = new Array();
   myexpress.use = function(argv1, argv2) {
     var path = argv2? argv1 : "/";

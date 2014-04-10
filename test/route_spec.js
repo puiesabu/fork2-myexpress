@@ -167,3 +167,20 @@ describe("Implement Verbs For Route", function() {
     request(app).get("/").expect("got").end(done);
   });
 });
+
+describe("Implement app.route", function() {
+  var app;
+  beforeEach(function() {
+    app = express();
+    app.route("/foo")
+    .get(function(req,res) {
+      res.end("got foo");
+    })
+    .post(function(req,res) {
+      res.end("posted foo");
+    });
+  });
+  it("can create a new route", function(done) {
+    request(app).get("/foo").expect("got foo").end(done);
+  });
+});
