@@ -123,3 +123,47 @@ describe("Implement Route Handlers Invokation:", function() {
     });
   });
 });
+
+describe("Implement Verbs For Route", function() {
+  var app, route, methods;
+
+  try {
+    methods = require("methods").concat("all");
+  } catch(e) {
+    methods = [];
+  }
+
+  beforeEach(function() {
+    app = express();
+    route = makeRoute();
+    app.use(route);
+  });
+
+  methods.forEach(function(method) {
+    it("should respond to " + method, function(done) {
+      route[method](function(req, res) {
+        res.end("done");
+      });
+
+      if (method == "delete") {
+        method = "del";
+      } 
+
+      if (method == "all") {
+        method = "get";
+      }
+
+      request(route)[method]("/").expect(200).end(done);
+    });
+  });
+
+  it("should be able to chain verbs", function(done) {
+    route.get(function(req, res) {
+      next();
+    }).get(function(req, res) {
+      res.end("got");
+    });
+
+    request(app).get("/").expect("got").end(done);
+  });
+});
