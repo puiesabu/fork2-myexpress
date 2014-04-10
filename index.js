@@ -81,19 +81,19 @@ module.exports = express = function() {
     var path = argv2? argv1 : "/";
     var f = argv2? argv2 : argv1;
 
-    var layer = new Layer(path, f);
-    myexpress.stack.push(layer);
+    addLayer(path, f);
   };
-
-  var addLayer = function(path, f, method) {
-    var layer = new Layer(path, makeRoute(method, f));
-    layer.method = method;
-
-    myexpress.stack.push(layer);
-  }
 
   myexpress.get = function(path, f) {
     addLayer(path, f, "get");
+  }
+
+  var addLayer = function(path, f, method) {
+    var f = method? makeRoute(method, f) : f;
+    var layer = new Layer(path, f);
+    layer.method = method;
+
+    myexpress.stack.push(layer);
   }
 
   methods.forEach(function(method) {
