@@ -184,3 +184,47 @@ describe("Implement app.route", function() {
     request(app).get("/foo").expect("got foo").end(done);
   });
 });
+
+describe("Implement Verbs For App", function() {
+  var app, methods;
+
+  try {
+    methods = require("methods").concat("all");
+  } catch(e) {
+    methods = [];
+  }
+
+  beforeEach(function() {
+    app = express();
+  });
+
+  methods.concat("all").forEach(function(method) {
+    it("creates a new route for " + method, function(done) {
+      app.route("/foo")[method](function(req, res) {
+        res.end("foo");
+      });
+
+      if (method == "delete") {
+        method = "del";
+      } 
+
+      if (method == "all") {
+        method = "get";
+      }
+
+      request(app)[method]("/foo").expect(200).end(done);
+    });
+  });
+
+  it("can chain VERBS", function(done) {
+    app.get("/foo", function(req, res) {
+      res.end("foo");
+    });
+    app.get("/bar", function(req, res) {
+      res.end("bar");
+    });
+
+    expect(app.stack).to.have.length(2);
+    request(app).get("/bar").expect("bar").end(done);
+  });
+});

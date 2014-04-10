@@ -82,7 +82,9 @@ module.exports = express = function() {
     if (!route) {
       route = makeRoute();
       myexpress.routes[path] = route;
-      myexpress.use(route);
+
+      var layer = new Layer(path, route, true);
+      myexpress.stack.push(layer);
     }
     return route;
   }
@@ -92,28 +94,16 @@ module.exports = express = function() {
     var path = argv2? argv1 : "/";
     var f = argv2? argv2 : argv1;
 
-    addLayer(path, f);
-  };
-
-  myexpress.get = function(path, f) {
-    addLayer(path, f, "get");
-  }
-
-  var addLayer = function(path, f, method) {
-    if (method) {
-      var route = makeRoute();
-      f = route.use(method, f);
-    }
-
-    var layer = new Layer(path, f);
-    layer.method = method;
+    var layer = new Layer(path, f, false);
 
     myexpress.stack.push(layer);
-  }
+  };
 
-  methods.forEach(function(method) {
+  methods.concat("all").forEach(function(method) {
     myexpress[method] = function(path, f) {
-      addLayer(path, f, method);
+      var route = myexpress.route(path);
+      route.use(method, f);
+      return myexpress;
     }
   });
 
