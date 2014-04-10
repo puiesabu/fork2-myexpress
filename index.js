@@ -89,7 +89,11 @@ module.exports = express = function() {
   }
 
   var addLayer = function(path, f, method) {
-    var f = method? makeRoute(method, f) : f;
+    if (method) {
+      var route = makeRoute();
+      f = route.use(method, f);
+    }
+
     var layer = new Layer(path, f);
     layer.method = method;
 
