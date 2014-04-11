@@ -25,8 +25,7 @@ module.exports = express = function() {
         }
 
         var layer = myexpress.stack[n++];
-        if (layer.method) {
-          if (layer.method != request.method.toLowerCase() || layer.path != request.url)
+        if (layer.method && layer.method != request.method.toLowerCase()) {
           next(error);
         }
 
@@ -37,7 +36,7 @@ module.exports = express = function() {
           request.params = match.params;
         }
 
-        if (error && layer.path != request.url) {
+        if (error && layer.path != request.url && request.url != "/") {
           next(error);
         }
 
@@ -70,9 +69,9 @@ module.exports = express = function() {
     }
   }
 
-  myexpress.listen = function(port) {
+  myexpress.listen = function(port, done) {
     var server = require("http").createServer(this);
-    server.listen(port);
+    server.listen(port, done);
     return server;
   };
 
@@ -94,7 +93,7 @@ module.exports = express = function() {
     var path = argv2? argv1 : "/";
     var f = argv2? argv2 : argv1;
 
-    var layer = new Layer(path, f, false);
+    var layer = new Layer(path, f);
 
     myexpress.stack.push(layer);
   };
