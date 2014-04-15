@@ -1,57 +1,60 @@
 var Layer = require("./lib/layer");
 var makeRoute = require("./lib/route.js");
 var methods = require("methods");
+var request = require("./lib/request");
+var response = require("./lib/response");
 
 module.exports = express = function() {
   var next;
   var parentNext;
 
-  var myexpress = function(request, response, _parentNext) {
+  var myexpress = function(req, res, _parentNext) {
     parentNext = _parentNext;
 
-    getNext(request, response, 0);
+    myexpress.monkey_patch(req, res);
+    getNext(req, res, 0);
     next();
   };
 
-  var getNext = function(request, response, n) {
+  var getNext = function(req, res, n) {
     var originalUrl = null;
 
     next = function(error) {
       if (n < myexpress.stack.length) {
         if (originalUrl != null) {
-          // restore request.url
-          request.url = originalUrl;
+          // restore req.url
+          req.url = originalUrl;
           originalUrl = null;
         }
 
         var layer = myexpress.stack[n++];
-        if (layer.method && layer.method != request.method.toLowerCase()) {
+        if (layer.method && layer.method != req.method.toLowerCase()) {
           next(error);
         }
 
-        var match = layer.match(request.url);
+        var match = layer.match(req.url);
         if (match === undefined) {
           next(error);
         } else {
-          request.params = match.params;
+          req.params = match.params;
         }
 
-        if (error && layer.path != request.url && request.url != "/") {
+        if (error && layer.path != req.url && req.url != "/") {
           next(error);
         }
 
         var f = layer.handle;
 
         if(typeof f.handle === "function") {
-          originalUrl = request.url
-          request.url = request.url.substr(layer.path .length);
+          originalUrl = req.url
+          req.url = req.url.substr(layer.path .length);
         }
 
         try {
           if (!error && f.length < 4) {
-            f(request, response, next);
+            f(req, res, next);
           } else if (error && f.length == 4) {
-            f(error, request, response, next);
+            f(error, req, res, next);
           } else {
             next(error);
           }
@@ -62,11 +65,16 @@ module.exports = express = function() {
         if (parentNext) {
           parentNext(error); 
         } else {
-          response.statusCode = error? 500 : 404;
-          response.end();
+          res.statusCode = error? 500 : 404;
+          res.end();
         }
       }
     }
+  }
+
+  myexpress.monkey_patch = function(req, res) {
+    req.__proto__ = request;
+    res.__proto__ = response;
   }
 
   myexpress.listen = function(port, done) {
