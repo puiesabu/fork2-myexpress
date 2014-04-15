@@ -65,3 +65,22 @@ describe("Setting req.app", function() {
     })
   });    
 });
+
+describe("req.res and res.req", function() {
+  it("makes request and response accessible to each other", function(done) {
+    var app = express();
+    var _req, _res;
+    app.use(function(req,res) {
+      _res = res;
+      _req = req;
+
+      res.end("ok");
+    });
+
+    request(app).get("/").expect(200).end(function() {
+      expect(_res).to.equal(_req.res);
+      expect(_req).to.equal(_res.req);
+      done();
+    })
+  });
+});

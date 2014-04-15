@@ -77,8 +77,10 @@ module.exports = express = function() {
   myexpress.monkey_patch = function(req, res) {
     req.__proto__ = request;
     req.__proto__.app = this;
+    req.__proto__.res = res;
 
     res.__proto__ = response;
+    res.__proto__.req = req;
   }
 
   myexpress.listen = function(port, done) {
