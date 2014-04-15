@@ -25,3 +25,43 @@ describe("Monkey patch before serving", function() {
     request(app).get("/").expect("true,true").end(done);    
   });
 });
+
+describe("Setting req.app", function() {
+  var app;
+  beforeEach(function() {
+    app = express();
+  });
+
+  it("sets req.app when entering an app", function(done) {
+    var _app;
+    app.use(function(req,res,next) {
+      _app = req.app;
+      res.end("ok");
+    });
+
+    request(app).get("/").expect(200).end(function() {
+      expect(_app).to.equal(app);
+      done();
+    });
+  });
+  
+  it("resets req.app to parent app when exiting a subapp", function(done) {
+    var _app, _subapp;
+    var subapp = express();
+    subapp.use(function(req,res,next) {
+      _subapp = req.app;
+      next();
+    });    
+    app.use(subapp);
+    app.use(function(req,res,next) {
+      _app = req.app;
+      res.end("ok");
+    });
+
+    request(app).get("/").expect(200).end(function() {
+      expect(_app).to.equal(app);
+      expect(_subapp).to.equal(subapp);
+      done();
+    })
+  });    
+});

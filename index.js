@@ -48,6 +48,8 @@ module.exports = express = function() {
         if(typeof f.handle === "function") {
           originalUrl = req.url
           req.url = req.url.substr(layer.path .length);
+        } else {
+          myexpress.monkey_patch(req, res);
         }
 
         try {
@@ -74,6 +76,8 @@ module.exports = express = function() {
 
   myexpress.monkey_patch = function(req, res) {
     req.__proto__ = request;
+    req.__proto__.app = this;
+
     res.__proto__ = response;
   }
 
