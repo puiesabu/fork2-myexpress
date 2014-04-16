@@ -84,3 +84,28 @@ describe("req.res and res.req", function() {
     })
   });
 });
+
+describe("HTTP redirect:", function() {
+  var app;
+  beforeEach(function() {
+    app = express();
+    app.use("/foo",function(req,res) {
+      res.redirect("/baz"); // default status code is 302
+    });
+    app.use("/bar",function(req,res) {
+      res.redirect(301,"/baz");
+    });
+  });
+
+  it("redirects with 302 by default", function(done) {
+    request(app).get("/foo").expect(302).end(done);
+  });
+
+  it("redirects with the given status code", function(done) {
+    request(app).get("/bar").expect(301).end(done);
+  });
+
+  it("returns empty body", function(done) {
+    request(app).get("/foo").expect("").end(done);
+  });
+});
