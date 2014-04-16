@@ -32,3 +32,46 @@ describe("Setting Content-Type", function() {
       .expect("Content-Type", "text/plain").end(done);
   });
 });
+
+describe("req.format", function() {
+  var app;
+  beforeEach(function() {
+    app = express();
+  });
+
+  describe("Respond with different formats", function() {
+    beforeEach(function() {
+      app.use(function(req,res) {
+        res.format({
+          text: function() {
+            res.end("text hello");
+          },
+
+          html: function() {
+            res.end("html <b>hello</b>");
+          }
+        });
+      })
+    });
+
+    it("responds to text request", function(done) {
+      request(app).get("/")
+        .set("Accept", "text/plain")
+        .expect("text hello").end(done);
+    });
+
+    it("responds to html request", function(done) {
+      request(app).get("/")
+        .set("Accept", "text/html")
+        .expect("html <b>hello</b>").end(done);
+    });
+  });
+
+  it("responds with 406 if there is no matching type", function(done) {
+    app.use(function(req,res) {
+      res.format({});
+    });
+
+    request(app).get("/").expect(406).end(done);
+  });
+});
