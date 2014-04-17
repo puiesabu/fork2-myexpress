@@ -88,4 +88,16 @@ describe("res.send:", function() {
       request(app).get("/201").expect(201).expect("Created").end(done);
     });
   });
+
+  describe("JSON response:", function() {
+    it("returns a JSON as response", function(done) {
+      app.use(function(req,res) {
+        res.send({foo: [1,2,3]});
+      });
+
+      request(app).get("/")
+        .expect("Content-Type", "application/json")
+        .expect({"foo": [1,2,3]}).end(done);
+    });
+  });
 });
