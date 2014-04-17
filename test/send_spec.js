@@ -156,4 +156,20 @@ describe("Conditional get:", function() {
       request(app).get("/").set("If-None-Match", "foo-v0").expect(200).end(done);
     });
   });
+
+  describe("Last-Modified 304:", function() {
+    beforeEach(function() {
+      app.use(function(req,res) {
+        res.setHeader("Last-Modified","Sun, 31 Jan 2010 16:00:00 GMT")
+        res.send("bar-2010");
+      });
+    });
+
+    it("returns 304 if not modified since", function(done) {
+      request(app).get("/").set("If-Modified-Since", "Sun, 31 Jan 2010 16:00:00 GMT").expect(304).end(done);
+    });
+    it("returns 200 if modified since", function(done) {
+      request(app).get("/").set("If-Modified-Since", "Thu, 31 Jan 2008 16:00:00 GMT").expect(200).end(done);
+    });
+  });
 });
