@@ -139,4 +139,21 @@ describe("Conditional get:", function() {
       }).end(done);
     });
   });
+
+  describe("ETag 304:", function() {
+    beforeEach(function() {
+      app.use("/",function(req,res) {
+        res.setHeader("Etag","foo-v1")
+        res.send("foo-v1");
+      });
+    });
+
+    it("returns 304 if ETag matches", function(done) {
+      request(app).get("/").set("If-None-Match", "foo-v1").expect(304).end(done);
+    });
+
+    it("returns 200 if ETag doesn't match", function(done) {
+      request(app).get("/").set("If-None-Match", "foo-v0").expect(200).end(done);
+    });
+  });
 });
