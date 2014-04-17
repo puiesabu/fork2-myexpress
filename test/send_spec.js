@@ -101,3 +101,42 @@ describe("res.send:", function() {
     });
   });
 });
+
+describe("Conditional get:", function() {
+  var app;
+  beforeEach(function() {
+    app = express();
+  });
+
+  describe("Calculate Etag:", function() {
+    beforeEach(function() {
+      app.use("/plumless",function(req,res) {
+        res.send("plumless");
+      });
+      app.use("/buckeroo",function(req,res) {
+        res.setHeader("Etag","buckeroo");
+        res.send("buckeroo");
+      });
+    });
+
+    it("generates ETag", function(done) {
+      request(app).get("/plumless").expect("ETag", '"1306201125"').end(done);
+    });
+
+    it("doesn't generate ETag for non GET requests", function(done) {
+      request(app).post("/plumless").expect(function(res) {
+        expect(res.headers).to.not.have.property("etag")
+      }).end(done);
+    });
+
+    it("doesn't generate ETag if already set", function(done) {
+      request(app).get("/buckeroo").expect("ETag", "buckeroo").end(done);
+    });
+
+    it("doesn't generate ETag for empty body", function(done) {
+      request(app).post("/").expect(function(res) {
+        expect(res.headers).to.not.have.property("etag")
+      }).end(done);
+    });
+  });
+});
