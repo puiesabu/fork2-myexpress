@@ -45,4 +45,46 @@ describe("Basic res.sendfile", function() {
       request(app).get("/").expect("test").end(done);      
     });
   });
+
+  describe("content headers:", function() {
+    beforeEach(function() {
+      app.use(function(req, res) {
+        res.sendfile(path);
+      });
+    });
+
+    it("sets content type", function(done) {
+      request(app).get("/").expect("Content-Type","text/plain").end(done);
+    });
+
+    it("sets content length", function(done) {
+      request(app).get("/").expect("Content-Length",4).end(done);
+    });
+  });
+
+  describe("path checking:", function() {
+    it("should 404 if fs.stat fails", function(done) {
+      app.use(function(req, res) {
+        res.sendfile(__dirname + "/" + file);
+      });
+
+      request(app).get("/").expect(404).end(done);
+    });
+
+    it("should 403 if file is a directory", function(done) {
+      app.use(function(req, res) {
+        res.sendfile(__dirname + "/data");
+      });
+
+      request(app).get("/").expect(403).end(done);
+    });
+
+    it("should 403 if path contains ..", function(done) {
+      app.use(function(req, res) {
+        res.sendfile(__dirname + "../package.json");
+      });
+
+      request(app).get("/").expect(403).end(done);
+    });
+  });
 });
