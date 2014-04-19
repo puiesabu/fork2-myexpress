@@ -87,4 +87,34 @@ describe("Basic res.sendfile", function() {
       request(app).get("/").expect(403).end(done);
     });
   });
+
+  describe("Range support", function() {
+    beforeEach(function() {
+      app.use(function(req, res) {
+        res.sendfile(path);
+      });      
+    });
+
+    it("sets Accept-Range", function(done) {
+      request(app).get("/").expect("Accept-Range","bytes").end(done);
+    });
+
+    it("returns 206 for Range get", function(done) {
+      request(app).get("/")
+        .set("Range","bytes=0-1")
+        .expect(206).end(done);
+    });
+
+    it("returns 416 for unsatisfiable range", function(done) {
+      request(app).get("/")
+        .set("Range","bytes=1-0")
+        .expect(416).end(done);
+    });
+
+    it("ignores Range if it is invalid", function(done) {
+      request(app).get("/")
+        .set("Range","invalid range")
+        .expect(200).end(done);
+    });
+  });
 });
